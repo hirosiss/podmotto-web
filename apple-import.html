@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PodMotto — Apple Podcasts → OPML</title>
+<style>
+  :root { --green:#1f7a54; --ink:#2b2b2b; --mut:#6b7280; --line:#e5e7eb; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Segoe UI",sans-serif;
+         color:var(--ink); background:#f6f7f8; line-height:1.6; }
+  .wrap { max-width:680px; margin:0 auto; padding:32px 20px 64px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:var(--mut); font-size:14px; margin:0 0 28px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin-bottom:18px; }
+  .step { display:flex; gap:12px; align-items:flex-start; margin-bottom:14px; }
+  .num { flex:0 0 26px; height:26px; border-radius:50%; background:var(--green); color:#fff;
+         font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .step p { margin:0; font-size:14px; }
+  code { background:#f0f1f2; padding:2px 6px; border-radius:5px; font-size:12.5px; word-break:break-all; }
+  .pathrow { display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap; }
+  button { font:inherit; cursor:pointer; border:none; border-radius:10px; }
+  .btn { background:var(--green); color:#fff; font-weight:600; padding:9px 14px; }
+  .btn.sm { padding:6px 10px; font-size:13px; }
+  .drop { border:2px dashed #c7cdd4; border-radius:14px; padding:40px 20px; text-align:center;
+          color:var(--mut); background:#fff; transition:.15s; }
+  .drop.hot { border-color:var(--green); background:#f0faf5; color:var(--green); }
+  .drop strong { color:var(--ink); }
+  #result { display:none; }
+  .ok { color:var(--green); font-weight:700; font-size:18px; }
+  .err { color:#c0392b; font-size:14px; margin-top:10px; }
+  .dl { display:inline-block; margin-top:14px; background:var(--green); color:#fff; font-weight:700;
+        padding:12px 22px; border-radius:12px; text-decoration:none; }
+  .foot { color:var(--mut); font-size:12px; margin-top:28px; text-align:center; }
+  .lang { float:right; font-size:13px; }
+  .lang a { color:var(--green); text-decoration:none; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lang"><a onclick="setLang('ja')">日本語</a> · <a onclick="setLang('en')">English</a></div>
+  <h1 data-ja="Apple Podcasts → PodMotto" data-en="Apple Podcasts → PodMotto">Apple Podcasts → PodMotto</h1>
+  <p class="sub"
+     data-ja="Mac の Apple Podcasts の購読番組を OPML に書き出します。ブラウザ内だけで処理され、データはどこにも送信されません。"
+     data-en="Export your Apple Podcasts subscriptions (on Mac) to an OPML file. Everything runs in your browser — nothing is uploaded.">…</p>
+
+  <div class="card">
+    <div class="step"><div class="num">1</div><p
+      data-ja="Mac の <strong>Finder</strong> で <code>⌘⇧G</code> を押し、下のパスを貼り付けてフォルダを開きます。"
+      data-en="On your Mac, open <strong>Finder</strong>, press <code>⌘⇧G</code>, and paste the path below.">…</p></div>
+    <div class="pathrow">
+      <code id="path">~/Library/Group Containers/243LU875E5.groups.com.apple.podcasts/Library/Database/</code>
+      <button class="btn sm" onclick="copyPath()" data-ja="パスをコピー" data-en="Copy path">Copy</button>
+    </div>
+    <div class="step" style="margin-top:14px"><div class="num">2</div><p
+      data-ja="そのフォルダ内の <code>MTLibrary.sqlite</code> を下のエリアにドラッグ&amp;ドロップ（または選択）します。"
+      data-en="Drag <code>MTLibrary.sqlite</code> from that folder into the area below (or click to choose it).">…</p></div>
+  </div>
+
+  <div id="drop" class="drop">
+    <p><strong data-ja="MTLibrary.sqlite をここにドロップ" data-en="Drop MTLibrary.sqlite here">Drop MTLibrary.sqlite here</strong></p>
+    <p data-ja="またはクリックしてファイルを選択" data-en="or click to choose a file">or click to choose a file</p>
+    <input id="file" type="file" accept=".sqlite,application/octet-stream" style="display:none">
+  </div>
+
+  <div id="result" class="card">
+    <div class="ok" id="okmsg"></div>
+    <a id="download" class="dl"></a>
+    <div class="step" style="margin-top:20px"><div class="num">3</div><p
+      data-ja="ダウンロードした <code>podmotto-podcasts.opml</code> を AirDrop / iCloud Drive で iPhone に送ります。"
+      data-en="Send the downloaded <code>podmotto-podcasts.opml</code> to your iPhone via AirDrop / iCloud Drive.">…</p></div>
+    <div class="step"><div class="num">4</div><p
+      data-ja="PodMotto アプリで「OPML ファイルを選択」をタップし、そのファイルを選びます。"
+      data-en="In the PodMotto app, tap “Select OPML File” and choose that file.">…</p></div>
+  </div>
+
+  <div id="error" class="err"></div>
+  <div class="foot">PodMotto · Apple Podcasts import — 100% client-side</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<script>
+function setLang(l){
+  localStorage.setItem("pm_lang", l);
+  document.documentElement.lang = l;
+  document.querySelectorAll("[data-ja]").forEach(function(el){
+    el.innerHTML = el.getAttribute("data-"+l) || el.innerHTML;
+  });
+}
+setLang(localStorage.getItem("pm_lang") || (navigator.language||"en").slice(0,2)==="ja" ? "ja" : "en");
+
+function copyPath(){
+  navigator.clipboard.writeText(document.getElementById("path").textContent.trim());
+}
+
+var drop = document.getElementById("drop");
+var fileInput = document.getElementById("file");
+drop.addEventListener("click", function(){ fileInput.click(); });
+drop.addEventListener("dragover", function(e){ e.preventDefault(); drop.classList.add("hot"); });
+drop.addEventListener("dragleave", function(){ drop.classList.remove("hot"); });
+drop.addEventListener("drop", function(e){
+  e.preventDefault(); drop.classList.remove("hot");
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener("change", function(){
+  if (fileInput.files.length) handleFile(fileInput.files[0]);
+});
+
+var SQLPromise = initSqlJs({
+  locateFile: function(f){ return "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/" + f; }
+});
+
+function showError(msgJa, msgEn){
+  var l = document.documentElement.lang;
+  document.getElementById("error").textContent = l === "ja" ? msgJa : msgEn;
+}
+
+async function handleFile(file){
+  document.getElementById("error").textContent = "";
+  try {
+    var SQL = await SQLPromise;
+    var buf = new Uint8Array(await file.arrayBuffer());
+    var db = new SQL.Database(buf);
+    // Apple Podcasts subscriptions live in ZMTPODCAST (feed URL + title).
+    var res = db.exec("SELECT ZFEEDURL, ZTITLE FROM ZMTPODCAST WHERE ZFEEDURL IS NOT NULL ORDER BY ZTITLE");
+    db.close();
+    if (!res.length || !res[0].values.length) {
+      showError("購読番組が見つかりませんでした。正しい MTLibrary.sqlite か確認してください。",
+                "No subscriptions found. Please check that this is the correct MTLibrary.sqlite.");
+      return;
+    }
+    var rows = res[0].values; // [[feedUrl, title], ...]
+    var opml = buildOPML(rows);
+    var blob = new Blob([opml], { type: "text/xml" });
+    var url = URL.createObjectURL(blob);
+    var dl = document.getElementById("download");
+    dl.href = url; dl.download = "podmotto-podcasts.opml";
+    var l = document.documentElement.lang;
+    dl.textContent = l === "ja" ? "OPML をダウンロード" : "Download OPML";
+    document.getElementById("okmsg").textContent =
+      l === "ja" ? (rows.length + " 件の番組を書き出しました") : (rows.length + " shows exported");
+    document.getElementById("result").style.display = "block";
+    document.getElementById("result").scrollIntoView({ behavior: "smooth" });
+  } catch (e) {
+    showError("ファイルの読み取りに失敗しました: " + e, "Failed to read the file: " + e);
+  }
+}
+
+function esc(s){
+  return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");
+}
+function buildOPML(rows){
+  var now = new Date().toUTCString();
+  var out = '<?xml version="1.0" encoding="UTF-8"?>\n<opml version="2.0">\n  <head>\n';
+  out += '    <title>Apple Podcasts Subscriptions</title>\n';
+  out += '    <dateCreated>' + now + '</dateCreated>\n  </head>\n  <body>\n';
+  rows.forEach(function(r){
+    var feed = r[0], title = r[1] || "";
+    out += '    <outline type="rss" text="' + esc(title) + '" title="' + esc(title) +
+           '" xmlUrl="' + esc(feed) + '"/>\n';
+  });
+  out += '  </body>\n</opml>\n';
+  return out;
+}
+</script>
+</body>
+</html>
