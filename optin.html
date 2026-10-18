@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Podmotto — Enable AI voice for your podcast</title>
+<meta name="description" content="Podcast creators: opt in to Podmotto's high-quality AI voice. We verify ownership via the owner email published in your RSS feed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#30323a; --muted:rgba(48,50,58,.62); --line:rgba(48,50,58,.14);
+         --green:#2d6a4f; --panel:rgba(48,50,58,.04); }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#fff;color:var(--ink);line-height:1.6;
+       font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+  .wrap{max-width:600px;margin:0 auto;padding:56px 24px 80px;}
+  h1{font-family:"Fraunces",serif;font-weight:500;font-size:clamp(28px,5vw,40px);
+     letter-spacing:-0.01em;line-height:1.1;margin:0 0 14px;}
+  .sub{color:var(--muted);font-size:16px;margin:0 0 32px;}
+  label{display:block;font-size:14px;font-weight:600;margin:0 0 8px;}
+  input[type=url]{width:100%;font:inherit;padding:12px 14px;border:1px solid var(--line);
+       border-radius:10px;color:var(--ink);}
+  input[type=url]:focus{outline:none;border-color:var(--green);}
+  button{font:inherit;font-weight:600;cursor:pointer;border:none;border-radius:999px;
+         background:var(--green);color:#fff;padding:12px 22px;margin-top:16px;}
+  button:disabled{opacity:.5;cursor:default;}
+  .card{border:1px solid var(--line);border-radius:14px;padding:22px;margin:28px 0;background:var(--panel);}
+  .steps{font-size:14.5px;color:var(--muted);}
+  .steps li{margin:6px 0;}
+  .result{display:none;margin-top:24px;font-size:15.5px;}
+  .ok{color:var(--green);font-weight:600;}
+  .err{color:#c0392b;}
+  .foot{color:var(--muted);font-size:12.5px;margin-top:40px;text-align:center;}
+  code{background:#f0f1f2;padding:1px 6px;border-radius:5px;font-size:13px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Bring your podcast to the world</h1>
+  <p class="sub">Opt in to Podmotto's high-quality AI voice so listeners can hear your show in their own language. We confirm you're the owner using the email published in your feed — nothing is shared without your consent.</p>
+
+  <div class="card">
+    <label for="rss">Your podcast RSS feed URL</label>
+    <input id="rss" type="url" placeholder="https://feeds.example.com/your-show.xml" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <button id="go" onclick="submitRequest()">Send verification email</button>
+    <ol class="steps" style="margin-top:18px">
+      <li>We read the owner email in your feed (<code>&lt;itunes:owner&gt;</code>).</li>
+      <li>We email a confirmation link to that address.</li>
+      <li>Click the link to enable high-quality AI voice for your show.</li>
+    </ol>
+  </div>
+
+  <div id="result" class="result"></div>
+
+  <div class="foot">Podmotto · Creator opt-in — verified by feed owner email</div>
+</div>
+
+<script>
+  const ENDPOINT = "https://plwdwolhqrezoackpeuo.supabase.co/functions/v1/optin-request";
+  const result = document.getElementById("result");
+  const btn = document.getElementById("go");
+
+  async function submitRequest(){
+    const rss = document.getElementById("rss").value.trim();
+    result.style.display = "block";
+    if (!rss) { result.innerHTML = '<span class="err">Please enter your RSS feed URL.</span>'; return; }
+    btn.disabled = true;
+    result.innerHTML = "Checking your feed…";
+    try {
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rss_url: rss }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        result.innerHTML = '<span class="ok">Done!</span> We sent a confirmation link to <b>' +
+          (data.email_masked || "the owner address in your feed") +
+          '</b>. Click it to finish enabling AI voice.' +
+          (data.in_catalog ? "" : "<br><br><small>Note: your show isn't in Podmotto's catalog yet — we'll enable it as soon as it appears.</small>");
+      } else if (data.error === "no_owner_email") {
+        result.innerHTML = '<span class="err">' + data.message + '</span>';
+      } else {
+        result.innerHTML = '<span class="err">' + (data.message || data.error || "Something went wrong.") + '</span>';
+      }
+    } catch (e) {
+      result.innerHTML = '<span class="err">Network error: ' + e + '</span>';
+    } finally {
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>

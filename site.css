@@ -1,0 +1,149 @@
+/* ==== Podmotto site — shared styles (monochrome + green/orange accents) ==== */
+:root{
+  --ink:#30323a;                /* softened near-black (grey, not pure black) */
+  --bg:#ffffff;
+  --muted:rgba(48,50,58,.62);   /* same hue, opacity only */
+  --faint:rgba(48,50,58,.45);
+  --line:rgba(48,50,58,.13);
+  --panel:rgba(48,50,58,.04);
+  --green:#2d6a4f;              /* brand accent */
+  --orange:#ef7a16;            /* brand accent — lines & numbers only */
+  --maxw:1080px;
+  /* Serif for headings (editorial, LoveFrom-like), sans for body/UI */
+  --serif:"Fraunces","Hiragino Mincho ProN","YuMincho",serif;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans",sans-serif;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--sans);
+  font-weight:400; line-height:1.6; letter-spacing:-0.01em;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+a{color:inherit; text-decoration:none;}
+/* Serif headings + wordmark */
+h1,h2,h3,h4,.brand{font-family:var(--serif);}
+.wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px;}
+
+/* ---- Nav (static, left-aligned, minimal — reference: lovefromarchive) ---- */
+nav{position:static; background:var(--bg); border-bottom:1px solid var(--line);}
+.nav{display:flex; align-items:baseline; gap:32px; height:auto; padding:26px 0 24px;}
+.brand{font-weight:500; font-size:21px; letter-spacing:0;}
+.nav-right{display:flex; align-items:baseline; gap:26px; margin-left:auto;}
+.nav-links{display:flex; gap:26px;}
+.nav-links a{font-size:15px; color:var(--muted);}
+.nav-links a:hover{color:var(--ink);}
+/* Nav CTA is a plain text link to keep the bar minimal */
+.nav-right > .btn{font-size:15px; color:var(--ink); font-weight:500; padding:0;
+     background:none; border:none; border-radius:0;}
+.nav-right > .btn:hover{opacity:1; color:var(--green);}
+.btn{display:inline-block; font-size:14.5px; font-weight:500; border-radius:999px;
+     padding:10px 18px; background:var(--green); color:#fff; border:1px solid var(--green);
+     transition:opacity .15s;}
+.btn:hover{opacity:.85;}
+.btn.ghost{background:none; color:var(--ink); border-color:var(--line);}
+.btn.ghost:hover{background:var(--panel); opacity:1; border-color:var(--ink);}
+@media(max-width:720px){ .nav-links{display:none;} }
+
+/* ---- Hero ---- */
+.hero{padding:96px 0 72px; text-align:center;}
+.eyebrow{font-size:13px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+         color:var(--green); margin-bottom:22px;}
+h1{font-size:clamp(36px,5.4vw,62px); line-height:1.07; font-weight:400;
+   letter-spacing:-0.01em; margin:0 auto 24px; max-width:17ch;}
+.lede{font-size:clamp(17px,2.2vw,21px); color:var(--muted); max-width:48ch;
+      margin:0 auto 36px;}
+.cta-row{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+/* Orange used only as an emphasis LINE — no background, readable ink text */
+.note{display:inline-block; font-size:13.5px; color:var(--ink); font-weight:500;
+      margin-top:22px; padding-left:13px; border-left:3px solid var(--orange);}
+
+/* ---- Device mock ---- */
+.shot{margin:64px auto 0; max-width:960px;}
+.ph{border:1px solid var(--line); border-radius:18px; background:var(--panel);
+    aspect-ratio:16/9; display:flex; align-items:center; justify-content:center;
+    color:var(--faint); font-size:14px; text-align:center; padding:24px;}
+
+/* ---- Section scaffolding ---- */
+section{padding:84px 0;}
+.section-head{max-width:34ch; margin-bottom:56px;}
+.section-head.center{margin-left:auto; margin-right:auto; text-align:center; max-width:42ch;}
+h2{font-size:clamp(26px,3.3vw,38px); font-weight:400; letter-spacing:-0.005em; line-height:1.18; margin:0 0 16px;}
+.section-head p{font-size:17px; color:var(--muted); margin:0;}
+.divider{height:1px; background:var(--line); border:0; margin:0;}
+
+/* ---- Feature rows ---- */
+.feature{display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center;
+         padding:72px 0;}
+.feature:nth-child(even) .feature-text{order:2;}
+.feature-kicker{font-size:13px; font-weight:600; letter-spacing:.04em; color:var(--green);
+                text-transform:uppercase; margin-bottom:14px;}
+.feature h3{font-size:clamp(22px,2.6vw,29px); font-weight:500; letter-spacing:0;
+            line-height:1.22; margin:0 0 16px;}
+.feature-text a{color:var(--green);}
+.feature p{font-size:16.5px; color:var(--muted); margin:0 0 18px;}
+.feature ul{list-style:none; padding:0; margin:0; display:grid; gap:11px;}
+.feature li{font-size:15.5px; color:var(--ink); padding-left:26px; position:relative;}
+.feature li::before{content:""; position:absolute; left:4px; top:9px; width:8px; height:8px;
+                    background:var(--green); border-radius:50%;}
+@media(max-width:820px){
+  .feature{grid-template-columns:1fr; gap:28px; padding:48px 0;}
+  .feature:nth-child(even) .feature-text{order:0;}
+}
+
+/* ---- Steps ---- */
+.steps{display:grid; grid-template-columns:repeat(3,1fr); gap:40px;}
+.step .n{font-size:14px; font-weight:700; color:var(--orange); margin-bottom:14px;}
+.step h4{font-size:19px; font-weight:500; letter-spacing:0; margin:0 0 8px;}
+.step p{font-size:15px; color:var(--muted); margin:0;}
+@media(max-width:720px){ .steps{grid-template-columns:1fr; gap:30px;} }
+
+/* ---- FAQ ---- */
+.faq{max-width:760px; margin:0 auto;}
+details{border-bottom:1px solid var(--line); padding:22px 0;}
+summary{font-size:16.5px; font-weight:500; cursor:pointer; list-style:none; display:flex;
+        justify-content:space-between; align-items:center; gap:16px;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:"+"; font-weight:400; font-size:22px; color:var(--green);}
+details[open] summary::after{content:"\2013";}
+details p{font-size:15.5px; color:var(--muted); margin:14px 0 0;}
+
+/* ---- Pledge (privacy & copyright) ---- */
+.pledge{max-width:640px; margin:0 auto; display:grid; gap:20px; text-align:left;}
+.pledge li{list-style:none; font-size:16.5px; color:var(--muted); padding-left:30px;
+           position:relative; line-height:1.55;}
+.pledge li::before{content:""; position:absolute; left:5px; top:10px; width:9px; height:9px;
+                   background:var(--green); border-radius:50%;}
+.pledge strong{font-weight:600; color:var(--ink);}
+
+/* ---- Big CTA ---- */
+.final{text-align:center; padding:104px 0;}
+.final h2{max-width:18ch; margin-left:auto; margin-right:auto;}
+.final p{font-size:17px; color:var(--muted); max-width:42ch; margin:0 auto 32px;}
+
+/* ---- Footer ---- */
+footer{border-top:1px solid var(--line); padding:48px 0;}
+.foot{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:18px;}
+.foot-links{display:flex; gap:22px; flex-wrap:wrap;}
+.foot-links a{font-size:14px; color:var(--muted);}
+.foot-links a:hover{color:var(--ink);}
+.foot .brand{font-size:16px;}
+.copyright{font-size:13px; color:var(--faint); width:100%;}
+
+/* ---- Legal / long-form pages (privacy, terms) ---- */
+.legal{max-width:760px; margin:0 auto; padding:72px 0 96px;}
+.legal .eyebrow{text-align:left;}
+.legal h1{text-align:left; margin:0 0 10px; max-width:none; font-weight:400;
+          font-size:clamp(32px,4.2vw,48px); letter-spacing:-0.005em;}
+.legal .updated{font-size:14px; color:var(--faint); margin:0 0 36px;}
+.legal h2{font-size:23px; font-weight:500; margin:44px 0 12px; letter-spacing:0;}
+.legal p{font-size:16px; color:var(--muted); margin:0 0 16px;}
+.legal ul{margin:0 0 16px; padding-left:0; list-style:none; display:grid; gap:10px;}
+.legal li{font-size:16px; color:var(--ink); padding-left:24px; position:relative;}
+.legal li::before{content:""; position:absolute; left:2px; top:9px; width:7px; height:7px;
+                  background:var(--green); border-radius:50%;}
+.legal a{color:var(--green); text-decoration:underline;}
+.legal .svc{display:grid; gap:4px; margin:0 0 16px;}
+.legal .svc div{font-size:16px; color:var(--ink);}
+.legal .svc span{color:var(--muted);}
